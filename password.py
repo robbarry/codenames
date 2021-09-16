@@ -11,11 +11,9 @@ def get_random_alphanumeric_string(length, special_characters=False):
     seed_characters = string.ascii_letters + string.digits
     if special_characters:
         seed_characters += string.punctuation
-    entropy = os.urandom(length)
     result = []
-    for i in range(0, len(entropy)):
-        c = entropy[i] % len(seed_characters)
-        result.append(seed_characters[c])
+    while len(result) < length:
+        result.append(secrets.choice(seed_characters))
     return "".join(result)
 
 
@@ -29,9 +27,6 @@ if __name__ == "__main__":
         "--min_length", "-min", default=12, type=int, help="maximum length"
     )
     parser.add_argument(
-        "--variable_length", "-v", action="store_true", help="variable length"
-    )
-    parser.add_argument(
         "--special_chars", "-s", action="store_true", help="special characters"
     )
     parser.add_argument("--length", "-l", type=int, help="fixed length setting")
@@ -40,9 +35,7 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     if args.length:
         length = args.length
-    elif args.variable_length:
-        length = secrets.choice(range(args.min_length, args.max_length))
     else:
-        length = args.max_length
+        length = secrets.choice(range(args.min_length, args.max_length))
 
     print(get_random_alphanumeric_string(length, args.special_chars))
