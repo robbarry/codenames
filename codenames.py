@@ -10,6 +10,8 @@ import argparse
 import hashlib
 import secrets
 
+import progressbar
+
 
 def get_wordlists():
     my_path = os.path.dirname(os.path.realpath(__file__))
@@ -48,6 +50,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--lower_case", "-l", action="store_true", help="lowercase codenames"
     )
+    parser.add_argument(
+        "--exclude_prior", "-x", action="store_true", help="only display last codeword"
+    )
+
     parser.add_argument("--join", "-j", default="", help="Join character")
     parser.add_argument("--words", "-w", default=2, help="Number of words", type=int)
     parser.add_argument(
@@ -57,6 +63,9 @@ if __name__ == "__main__":
         help="variable number of words (up to number specified in --words)",
     )
     parser.add_argument("--seed", "-s", help="random seed")
+    parser.add_argument(
+        "--progressbar", "-p", action="store_true", help="show progressbar"
+    )
     args = parser.parse_args()
 
     random.seed(get_seed(args.seed))
@@ -67,6 +76,10 @@ if __name__ == "__main__":
 
     codenames = []
     failures = 0
+    if args.progressbar:
+        bar = progressbar.ProgressBar(max_value=args.number)
+    else:
+        bar = None
     while len(codenames) < args.number and failures < 10000:
         word_set = []
         for i in range(0, args.words - 1):
@@ -100,9 +113,16 @@ if __name__ == "__main__":
                 failures += 1
             if len(codenames) >= args.number:
                 break
+        if bar:
+            bar.update(len(codenames))
+    if bar:
+        bar.finish()
 
     if len(codenames) < args.number:
         print("Failed: Parameters too strict")
 
-    for codename in codenames:
-        print("{}".format(codename))
+    if not args.exclude_prior:
+        for codename in codenames:
+            print("{}".format(codename))
+    else:
+        print(codenames[-1])
